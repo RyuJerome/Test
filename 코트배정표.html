@@ -44,6 +44,8 @@ button{font:inherit;color:inherit}
 /* ── 헤더 ─────────────────────────────────────────── */
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--sp-16);margin-bottom:var(--sp-20)}
 .top h1{margin:0;font-size:var(--fs-h3);font-weight:700;letter-spacing:-.01em}
+.top .subtitle{margin:var(--sp-2) 0 0;color:var(--text-accent);font-size:var(--fs-subtitle);font-weight:500}
+.top .subtitle[hidden]{display:none}
 .top .meta{margin:var(--sp-4) 0 0;color:var(--text-secondary);font-size:var(--fs-body-small)}
 .actions{display:flex;flex-wrap:wrap;gap:var(--sp-8)}
 .btn{
@@ -159,6 +161,7 @@ tr.hit td.lab{background:var(--bg-accent-subtle);color:var(--fill-accent)}
   <header class="top">
     <div>
       <h1 id="title">코트 배정표</h1>
+      <p class="subtitle" id="subtitle" hidden>코트 배정표</p>
       <p class="meta" id="meta"></p>
     </div>
     <div class="actions">
@@ -443,9 +446,14 @@ tr.hit td.lab{background:var(--bg-accent-subtle);color:var(--fill-accent)}
     var names = Object.keys(set).sort(function(a,b){ return a.localeCompare(b, 'ko', {numeric:true}); });
     $('names').innerHTML = names.map(function(n){ return '<option value="' + esc(n) + '">'; }).join('');
 
-    var title = DATA.title || A.title || '코트 배정표';
-    $('title').textContent = title; document.title = title;
-    $('meta').textContent = (DATA.source ? DATA.source + ' · ' : '') + (rows.length - H) + '개 행 · 이름 ' + names.length + '명';
+    // 메인 타이틀 = 엑셀 파일명, 보조 타이틀 = 코트 배정표
+    var subtitle = '코트 배정표';
+    var title = DATA.source || A.title || subtitle;
+    $('title').textContent = title;
+    $('subtitle').textContent = subtitle;
+    $('subtitle').hidden = title === subtitle;
+    document.title = title === subtitle ? title : title + ' · ' + subtitle;
+    $('meta').textContent = (A.title && A.title !== title ? A.title + ' · ' : '') + (rows.length - H) + '개 행 · 이름 ' + names.length + '명';
 
     select(selected && set[selected] ? selected : null);
   }
@@ -520,7 +528,7 @@ tr.hit td.lab{background:var(--bg-accent-subtle);color:var(--fill-accent)}
     return '<!doctype html>\n' + doc.outerHTML;
   }
   if ($('saveBtn')) $('saveBtn').addEventListener('click', async function(){
-    var html = buildHtml(), name = (DATA.title || '코트 배정표').replace(/[\\/:*?"<>|]/g, '_') + '.html';
+    var html = buildHtml(), name = (DATA.source || DATA.title || '코트 배정표').replace(/[\\/:*?"<>|]/g, '_') + '.html';
     var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
     if (window.showSaveFilePicker){
       try {
